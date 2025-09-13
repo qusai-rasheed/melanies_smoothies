@@ -1,5 +1,5 @@
 import streamlit as st
-from snowflake.snowpark import Session
+from snowflake.snowpark import session
 from snowflake.snowpark.functions import col
 
 # Create connection using Streamlit's connection
