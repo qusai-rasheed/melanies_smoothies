@@ -71,6 +71,17 @@ elif ingredients_list and not name_on_order:
 elif name_on_order and not ingredients_list:
     st.warning('Please select at least one ingredient.')
 
+# New section to display smoothiefroot nutrition information
+st.subheader('Nutrition Information')
+import requests
+smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
+st.text(smoothiefroot_response.json())
+
+# Convert JSON to DataFrame
+import pandas as pd
+sf_df = pd.json_normalize(smoothiefroot_response.json())
+st.dataframe(sf_df, use_container_width=True)
+
 # Display the fruit options dataframe for reference
 st.subheader('Our fruit options')
 st.dataframe(data=my_dataframe, use_container_width=True)
