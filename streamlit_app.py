@@ -75,7 +75,7 @@ if ingredients_list and name_on_order:
         st.dataframe(sf_df, use_container_width=True)
     
     # Build SQL insert statement with name - UPDATED DATABASE NAME
-    my_insert_stmt = f"INSERT INTO smoothies.public.orders(ingredients, name_on_order) VALUES ('{ingredients_string}', '{name_on_order}')"
+    my_insert_stmt = f"INSERT INTO smoothies.public.orders(ingredients, name_on_order, order_filled, order_ts) VALUES ('{ingredients_string}', '{name_on_order}', FALSE, CURRENT_TIMESTAMP)"
     
     # Show the SQL statement for debugging (comment out in production)
     st.write("SQL Statement:")
@@ -86,8 +86,10 @@ if ingredients_list and name_on_order:
     
     # Execute the insert only when button is clicked
     if time_to_insert:
+        # Update the statement to set order_filled = TRUE when submitted
+        submit_stmt = f"INSERT INTO smoothies.public.orders(ingredients, name_on_order, order_filled, order_ts) VALUES ('{ingredients_string}', '{name_on_order}', TRUE, CURRENT_TIMESTAMP)"
         try:
-            session.sql(my_insert_stmt).collect()
+            session.sql(submit_stmt).collect()
             st.success(f'Your Smoothie is ordered, {name_on_order}!', icon="✅")
             
             # Kitchen notification
