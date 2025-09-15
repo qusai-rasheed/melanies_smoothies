@@ -98,37 +98,6 @@ if ingredients_list and name_on_order:
             st.info(f'Ingredients: {ingredients_string}')
         except Exception as e:
             st.error(f'Error submitting order: {e}')
-    
-    # Remove trailing space
-    ingredients_string = ingredients_string.strip()
-    
-    # Display order summary
-    st.write('Your order:')
-    st.write(f'Name: {name_on_order}')
-    st.write(f'Ingredients: {ingredients_string}')
-    
-    # Build SQL insert statement with name - UPDATED DATABASE NAME
-    my_insert_stmt = f"INSERT INTO smoothies.public.orders(ingredients, name_on_order) VALUES ('{ingredients_string}', '{name_on_order}')"
-    
-    # Show the SQL statement for debugging (comment out in production)
-    st.write("SQL Statement:")
-    st.code(my_insert_stmt)
-    
-    # Add submit button
-    time_to_insert = st.button('Submit Order')
-    
-    # Execute the insert only when button is clicked
-    if time_to_insert:
-        try:
-            session.sql(my_insert_stmt).collect()
-            st.success(f'Your Smoothie is ordered, {name_on_order}!', icon="✅")
-            
-            # Kitchen notification
-            st.subheader('Kitchen Order Display')
-            st.info(f'Order for: {name_on_order}')
-            st.info(f'Ingredients: {ingredients_string}')
-        except Exception as e:
-            st.error(f'Error submitting order: {e}')
 
 elif ingredients_list and not name_on_order:
     st.warning('Please enter a name for your smoothie order.')
