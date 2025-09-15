@@ -11,11 +11,14 @@ session = cnx.session()
 st.title("Customize your smoothie! 🥤")
 st.write('Choose the fruits you want to add to your smoothie!')
 
-# Get fruit data using the session we created above
-my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
+# Get fruit data including the search_on column
+my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'), col('SEARCH_ON'))
 
-# Convert the dataframe to a list for the multiselect
-fruit_list = my_dataframe.to_pandas()['FRUIT_NAME'].tolist()
+# Convert to pandas for easier manipulation
+fruits_df = my_dataframe.to_pandas()
+
+# Create list for multiselect (still using FRUIT_NAME for display)
+fruit_list = fruits_df['FRUIT_NAME'].tolist()
 
 # Add name input field
 name_on_order = st.text_input('Name on Smoothie:')
@@ -38,21 +41,19 @@ if ingredients_list and name_on_order:
     for fruit_chosen in ingredients_list:
         ingredients_string += fruit_chosen + ' '
         
+        # Get the search term for this fruit from the database
+        search_term = fruits_df[fruits_df['FRUIT_NAME'] == fruit_chosen]['SEARCH_ON'].iloc[0]
+        
         # Get nutrition data for each fruit and display immediately
         st.subheader(fruit_chosen + ' Nutrition Information')
         try:
-            fruit_lower = fruit_chosen.replace(' ', '').lower()
-            smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{fruit_lower}")
+            # Use the search_on value for the API call instead of formatting fruit name
+            smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{search_term}")
             
             if smoothiefroot_response.status_code == 200:
                 fruit_data = smoothiefroot_response.json()
                 sf_df = pd.json_normalize(fruit_data)
                 st.dataframe(sf_df, use_container_width=True)
-            else:
-                st.error("Sorry, that fruit is not in our database.")
-                
-        except Exception as e:
-            st.error("Sorry, that fruit is not in our database.")            st.dataframe(sf_df, use_container_width=True)
             else:
                 st.error("Sorry, that fruit is not in our database.")
                 
