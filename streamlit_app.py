@@ -1,4 +1,6 @@
 import streamlit as st
+import requests
+import pandas as pd
 from snowflake.snowpark.functions import col
 
 # Create connection using Streamlit's connection (ONLY method needed)
@@ -32,9 +34,25 @@ if ingredients_list and name_on_order:
     # Convert the list to a string with spaces
     ingredients_string = ''
     
-    # FOR loop to build the string with spaces
+    # FOR loop to build the string with spaces AND get nutrition data
+    nutrition_data = []
+    
     for fruit_chosen in ingredients_list:
         ingredients_string += fruit_chosen + ' '
+        
+        # Get nutrition data for each fruit
+        try:
+            fruit_lower = fruit_chosen.replace(' ', '').lower()
+            smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{fruit_lower}")
+            
+            if smoothiefroot_response.status_code == 200:
+                fruit_data = smoothiefroot_response.json()
+                nutrition_data.append(fruit_data)
+            else:
+                st.warning(f"Nutrition data not available for {fruit_chosen}")
+                
+        except Exception as e:
+            st.warning(f"Could not fetch nutrition data for {fruit_chosen}")
     
     # Remove trailing space
     ingredients_string = ingredients_string.strip()
@@ -66,21 +84,17 @@ if ingredients_list and name_on_order:
             st.info(f'Ingredients: {ingredients_string}')
         except Exception as e:
             st.error(f'Error submitting order: {e}')
+    
+    # Display nutrition information if we have data
+    if nutrition_data:
+        st.subheader('Nutrition Information for Your Smoothie')
+        sf_df = pd.json_normalize(nutrition_data)
+        st.dataframe(sf_df, use_container_width=True)
+
 elif ingredients_list and not name_on_order:
     st.warning('Please enter a name for your smoothie order.')
 elif name_on_order and not ingredients_list:
     st.warning('Please select at least one ingredient.')
-
-# New section to display smoothiefroot nutrition information
-st.subheader('Nutrition Information')
-import requests
-import pandas as pd
-
-smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
-
-# Convert JSON to DataFrame
-sf_df = pd.json_normalize(smoothiefroot_response.json())
-st.dataframe(sf_df, use_container_width=True)
 
 # Display the fruit options dataframe for reference
 st.subheader('Our fruit options')
