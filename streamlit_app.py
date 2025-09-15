@@ -14,11 +14,11 @@ st.write('Choose the fruits you want to add to your smoothie!')
 # Get fruit data including the search_on column
 my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'), col('SEARCH_ON'))
 
-# Convert to pandas for easier manipulation
-fruits_df = my_dataframe.to_pandas()
+# Convert to pandas dataframe so we can use the LOC function
+pd_df = my_dataframe.to_pandas()
 
 # Create list for multiselect (still using FRUIT_NAME for display)
-fruit_list = fruits_df['FRUIT_NAME'].tolist()
+fruit_list = pd_df['FRUIT_NAME'].tolist()
 
 # Add name input field
 name_on_order = st.text_input('Name on Smoothie:')
@@ -41,14 +41,15 @@ if ingredients_list and name_on_order:
     for fruit_chosen in ingredients_list:
         ingredients_string += fruit_chosen + ' '
         
-        # Get the search term for this fruit from the database
-        search_term = fruits_df[fruits_df['FRUIT_NAME'] == fruit_chosen]['SEARCH_ON'].iloc[0]
+        # Get the search term for this fruit from the database using LOC function
+        search_on = pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
+        st.write('The search value for ', fruit_chosen,' is ', search_on, '.')
         
         # Get nutrition data for each fruit and display immediately
         st.subheader(fruit_chosen + ' Nutrition Information')
         try:
-            # Use the search_on value for the API call instead of formatting fruit name
-            smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{search_term}")
+            # Use the search_on value for the API call
+            smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{search_on}")
             
             if smoothiefroot_response.status_code == 200:
                 fruit_data = smoothiefroot_response.json()
