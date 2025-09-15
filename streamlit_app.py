@@ -74,11 +74,11 @@ elif name_on_order and not ingredients_list:
 # New section to display smoothiefroot nutrition information
 st.subheader('Nutrition Information')
 import requests
+import pandas as pd
+
 smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
-st.text(smoothiefroot_response.json())
 
 # Convert JSON to DataFrame
-import pandas as pd
 sf_df = pd.json_normalize(smoothiefroot_response.json())
 st.dataframe(sf_df, use_container_width=True)
 
