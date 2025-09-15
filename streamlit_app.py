@@ -60,8 +60,8 @@ if ingredients_list and name_on_order:
         except Exception as e:
             st.warning(f"Could not fetch nutrition data for {fruit_chosen}")
     
-    # Remove trailing space
-    ingredients_string = ingredients_string.strip()
+    # DO NOT strip trailing space - hash function expects it
+    # ingredients_string = ingredients_string.strip()  # REMOVED THIS LINE
     
     # Display order summary
     st.write('Your order:')
