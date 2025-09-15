@@ -81,8 +81,8 @@ if ingredients_list and name_on_order:
     st.write("SQL Statement:")
     st.code(my_insert_stmt)
     
-    # Add submit button
-    time_to_insert = st.button('Submit Order')
+    # Add submit button with unique key
+    time_to_insert = st.button('Submit Order', key='submit_order_btn')
     
     # Execute the insert only when button is clicked
     if time_to_insert:
