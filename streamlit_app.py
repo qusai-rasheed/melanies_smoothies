@@ -37,29 +37,65 @@ if ingredients_list and name_on_order:
     # Convert the list to a string with spaces
     ingredients_string = ''
     
-    # FOR loop to build the string with spaces AND get nutrition data
+    # FOR loop to build the string with spaces AND collect nutrition data
+    nutrition_data = []
+    
     for fruit_chosen in ingredients_list:
         ingredients_string += fruit_chosen + ' '
         
         # Get the search term for this fruit from the database using LOC function
         search_on = pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
-        st.write('The search value for ', fruit_chosen,' is ', search_on, '.')
         
-        # Get nutrition data for each fruit and display immediately
-        st.subheader(fruit_chosen + ' Nutrition Information')
+        # Collect nutrition data for each fruit
         try:
             # Use the search_on value for the API call
             smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{search_on}")
             
             if smoothiefroot_response.status_code == 200:
                 fruit_data = smoothiefroot_response.json()
-                sf_df = pd.json_normalize(fruit_data)
-                st.dataframe(sf_df, use_container_width=True)
+                nutrition_data.append(fruit_data)
             else:
-                st.error("Sorry, that fruit is not in our database.")
+                st.warning(f"Nutrition data not available for {fruit_chosen}")
                 
         except Exception as e:
-            st.error("Sorry, that fruit is not in our database.")
+            st.warning(f"Could not fetch nutrition data for {fruit_chosen}")
+    
+    # Remove trailing space
+    ingredients_string = ingredients_string.strip()
+    
+    # Display order summary
+    st.write('Your order:')
+    st.write(f'Name: {name_on_order}')
+    st.write(f'Ingredients: {ingredients_string}')
+    
+    # Show nutrition information for all selected fruits in one table
+    if nutrition_data:
+        st.subheader('Nutrition Information for Your Smoothie')
+        sf_df = pd.json_normalize(nutrition_data)
+        st.dataframe(sf_df, use_container_width=True)
+    
+    # Build SQL insert statement with name - UPDATED DATABASE NAME
+    my_insert_stmt = f"INSERT INTO smoothies.public.orders(ingredients, name_on_order) VALUES ('{ingredients_string}', '{name_on_order}')"
+    
+    # Show the SQL statement for debugging (comment out in production)
+    st.write("SQL Statement:")
+    st.code(my_insert_stmt)
+    
+    # Add submit button
+    time_to_insert = st.button('Submit Order')
+    
+    # Execute the insert only when button is clicked
+    if time_to_insert:
+        try:
+            session.sql(my_insert_stmt).collect()
+            st.success(f'Your Smoothie is ordered, {name_on_order}!', icon="✅")
+            
+            # Kitchen notification
+            st.subheader('Kitchen Order Display')
+            st.info(f'Order for: {name_on_order}')
+            st.info(f'Ingredients: {ingredients_string}')
+        except Exception as e:
+            st.error(f'Error submitting order: {e}')
     
     # Remove trailing space
     ingredients_string = ingredients_string.strip()
