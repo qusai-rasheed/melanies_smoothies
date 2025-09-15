@@ -81,12 +81,26 @@ if ingredients_list and name_on_order:
     st.write("SQL Statement:")
     st.code(my_insert_stmt)
     
-    # Add submit button with unique key
-    time_to_insert = st.button('Submit Order', key='submit_order_btn')
+    # Add two buttons: Save Order (FALSE) and Submit Order (TRUE)
+    col1, col2 = st.columns(2)
     
-    # Execute the insert only when button is clicked
-    if time_to_insert:
-        # Update the statement to set order_filled = TRUE when submitted
+    with col1:
+        save_order = st.button('Save Order', key='save_order_btn', help='Save order without submitting (ORDER_FILLED = FALSE)')
+    
+    with col2:
+        submit_order = st.button('Submit Order', key='submit_order_btn', help='Submit order for fulfillment (ORDER_FILLED = TRUE)')
+    
+    # Execute save order (ORDER_FILLED = FALSE)
+    if save_order:
+        try:
+            session.sql(my_insert_stmt).collect()
+            st.success(f'Your Smoothie order has been saved, {name_on_order}!', icon="💾")
+            st.info("Order saved but not yet submitted for fulfillment.")
+        except Exception as e:
+            st.error(f'Error saving order: {e}')
+    
+    # Execute submit order (ORDER_FILLED = TRUE)
+    if submit_order:
         submit_stmt = f"INSERT INTO smoothies.public.orders(ingredients, name_on_order, order_filled, order_ts) VALUES ('{ingredients_string}', '{name_on_order}', TRUE, CURRENT_TIMESTAMP)"
         try:
             session.sql(submit_stmt).collect()
