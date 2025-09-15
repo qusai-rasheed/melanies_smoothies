@@ -10,7 +10,7 @@ st.title("Customize your smoothie! 🥤")
 st.write('Choose the fruits you want to add to your smoothie!')
 
 # Get fruit data using the session we created above
-my_dataframe = session.table("pets.public.fruit_options").select(col('FRUIT_NAME'))
+my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
 
 # Convert the dataframe to a list for the multiselect
 fruit_list = my_dataframe.to_pandas()['FRUIT_NAME'].tolist()
@@ -45,7 +45,7 @@ if ingredients_list and name_on_order:
     st.write(f'Ingredients: {ingredients_string}')
     
     # Build SQL insert statement with name - UPDATED DATABASE NAME
-    my_insert_stmt = f"INSERT INTO pets.public.orders(ingredients, name_on_order) VALUES ('{ingredients_string}', '{name_on_order}')"
+    my_insert_stmt = f"INSERT INTO smoothies.public.orders(ingredients, name_on_order) VALUES ('{ingredients_string}', '{name_on_order}')"
     
     # Show the SQL statement for debugging (comment out in production)
     st.write("SQL Statement:")
