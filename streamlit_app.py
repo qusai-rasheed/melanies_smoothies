@@ -1,20 +1,16 @@
 import streamlit as st
-from snowflake.snowpark import session
 from snowflake.snowpark.functions import col
 
-# Create connection using Streamlit's connection
+# Create connection using Streamlit's connection (ONLY method needed)
 cnx = st.connection("snowflake")
 session = cnx.session()
 
-# Now you can use the session
-my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
 # Write directly to the app
 st.title("Customize your smoothie! 🥤")
 st.write('Choose the fruits you want to add to your smoothie!')
 
-# Get the session and fetch fruit data
-session = get_active_session()
-my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
+# Get fruit data using the session we created above
+my_dataframe = session.table("pets.public.fruit_options").select(col('FRUIT_NAME'))
 
 # Convert the dataframe to a list for the multiselect
 fruit_list = my_dataframe.to_pandas()['FRUIT_NAME'].tolist()
@@ -48,8 +44,8 @@ if ingredients_list and name_on_order:
     st.write(f'Name: {name_on_order}')
     st.write(f'Ingredients: {ingredients_string}')
     
-    # Build SQL insert statement with name - FIXED VERSION
-    my_insert_stmt = f"INSERT INTO smoothies.public.orders(ingredients, name_on_order) VALUES ('{ingredients_string}', '{name_on_order}')"
+    # Build SQL insert statement with name - UPDATED DATABASE NAME
+    my_insert_stmt = f"INSERT INTO pets.public.orders(ingredients, name_on_order) VALUES ('{ingredients_string}', '{name_on_order}')"
     
     # Show the SQL statement for debugging (comment out in production)
     st.write("SQL Statement:")
